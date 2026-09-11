@@ -1,0 +1,20 @@
+{
+  "_comment": "Контрольная выборка: формулировки написаны ПОСЛЕ настройки порогов и словаря и в настройке не участвовали. Нужна, чтобы отличить реальное качество от подгонки под основной набор.",
+  "cases": [
+    {"group": "holdout", "query": "а ребенку восьми лет надо платить за автобус", "expect_doc": ["benefit.cost.school", "benefit.categories", "fare.overview", "benefit.cost.overview"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "какая сумма спишется если приложить обычную дебетовую карту", "expect_doc": ["fare.city", "fare.overview", "payment.methods"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "мама пенсионерка хочет проездной куда ей обратиться", "expect_doc": ["benefit.where", "benefit.categories", "benefit.cost.adult", "benefit.cost.overview"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "валидатор пикнул но чек не пришел", "expect_doc": ["validator.green", "payment.notification"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "маршрутка ходит раз в час это нормально", "expect_doc": ["complaint.schedule"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "хочу узнать номера телефонов для жалоб на перевозчика", "expect_doc": ["contacts.support", "complaint.condition", "complaint.schedule"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "поменял карту сбербанка льгота сохранится", "expect_doc": ["benefit.wearables", "benefit.lost_card", "benefit.where"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "где увидеть по каким улицам поедет новый автобус", "expect_doc": ["routes.scheme", "routes.changes"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "остановку перенесли далеко от подъезда", "expect_doc": ["stops.new", "routes.changes"], "expect_kind": "answer"},
+    {"group": "holdout", "query": "деньги ушли а поездку не засчитали", "expect_doc": ["payment.double_charge", "validator.green", "payment.notification"], "expect_kind": "answer"},
+    {"group": "holdout_ood", "query": "как оплатить квитанцию за газ", "expect_kind": "no_data"},
+    {"group": "holdout_ood", "query": "во сколько открывается торговый центр", "expect_kind": "no_data"},
+    {"group": "holdout_ood", "query": "посоветуй фильм на вечер", "expect_kind": "no_data"},
+    {"group": "holdout_ood", "query": "сколько стоит такси до аэропорта", "expect_kind": "no_data"},
+    {"group": "holdout_region", "query": "действует ли мой тульский проездной в Калуге", "expect_kind": "out_of_scope"}
+  ]
+}

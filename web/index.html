@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ассистент пассажира — демо</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --panel:#ffffff; --ink:#14202b; --muted:#63798c;
+    --line:#dfe6ec; --accent:#1f6feb; --accent-soft:#e8f0fe;
+    --warn:#b7791f; --warn-soft:#fdf6e3; --ok:#1a7f5a; --ok-soft:#e6f5ef;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#10151b; --panel:#171e26; --ink:#e8eef4; --muted:#93a4b5;
+      --line:#26313d; --accent:#4c8dff; --accent-soft:#1b2740;
+      --warn:#e0b252; --warn-soft:#2b2415; --ok:#57c99a; --ok-soft:#142a22;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+  .wrap{max-width:840px;margin:0 auto;padding:20px 16px 32px}
+  header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  h1{font-size:19px;margin:0}
+  .sub{color:var(--muted);font-size:13px}
+  .chat{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+        padding:16px;min-height:340px;max-height:60vh;overflow-y:auto;margin-top:14px}
+  .msg{margin-bottom:14px;display:flex}
+  .msg.user{justify-content:flex-end}
+  .bubble{max-width:88%;padding:10px 13px;border-radius:12px;white-space:pre-wrap;word-wrap:break-word}
+  .user .bubble{background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+  .bot .bubble{background:var(--bg);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:11.5px}
+  .tag{padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .tag.answer{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+  .tag.clarify{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+  .tag.no_data,.tag.out_of_scope{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+  .src{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--muted)}
+  .src a{color:var(--accent);word-break:break-all}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btns button{background:var(--accent-soft);color:var(--accent);border:none;border-radius:18px;
+               padding:6px 13px;font-size:13px;cursor:pointer}
+  .btns button:hover{filter:brightness(.96)}
+  form{display:flex;gap:8px;margin-top:12px}
+  input[type=text]{flex:1;padding:12px 14px;border:1px solid var(--line);border-radius:10px;
+                   background:var(--panel);color:var(--ink);font-size:15px}
+  input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .send{padding:12px 20px;border:none;border-radius:10px;background:var(--accent);color:#fff;
+        font-size:15px;cursor:pointer}
+  .examples{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .examples button{background:transparent;border:1px solid var(--line);color:var(--muted);
+                   border-radius:18px;padding:6px 12px;font-size:12.5px;cursor:pointer}
+  .examples button:hover{border-color:var(--accent);color:var(--accent)}
+  details{margin-top:10px;font-size:12px;color:var(--muted)}
+  pre{white-space:pre-wrap;font-size:11.5px;background:var(--bg);padding:8px;border-radius:8px;
+      border:1px solid var(--line);overflow-x:auto}
+  footer{margin-top:18px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Ассистент пассажира общественного транспорта</h1>
+    <span class="sub">Тульская область · демо-интерфейс того же ядра, что и Telegram-бот</span>
+  </header>
+
+  <div class="chat" id="chat"></div>
+
+  <form id="form" autocomplete="off">
+    <input type="text" id="input" placeholder="Например: почему списалось дважды за одну поездку" required>
+    <button class="send" type="submit">Отправить</button>
+  </form>
+
+  <div class="examples" id="examples"></div>
+
+  <footer>
+    Ответы формируются только по загруженной базе знаний; при недостатке данных бот сообщает об этом
+    и предлагает оператора. <label style="cursor:pointer"><input type="checkbox" id="dbg"> показывать отладку поиска</label>
+  </footer>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const form = document.getElementById('form');
+const input = document.getElementById('input');
+const dbg = document.getElementById('dbg');
+const session = 'web-' + Math.random().toString(36).slice(2);
+
+const EXAMPLES = [
+  'Стоимость проезда',
+  'скока стоит проездной школьнику',
+  'списали дважды за одну поездку',
+  'приложил часы а льгота не сработала',
+  'мне положена льгота?',
+  'сколько стоит проезд в Костроме',
+  'когда в Туле построят метро'
+];
+
+const KIND_LABEL = {
+  answer:'ответ', clarify:'уточнение', no_data:'нет данных',
+  out_of_scope:'вне зоны ответственности', escalate:'оператор',
+  meta:'справка', smalltalk:'диалог'
+};
+
+function el(tag, cls, text){
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(text !== undefined) e.textContent = text;
+  return e;
+}
+
+function addUser(text){
+  const row = el('div','msg user');
+  row.appendChild(el('div','bubble',text));
+  chat.appendChild(row); chat.scrollTop = chat.scrollHeight;
+}
+
+function addBot(data){
+  const row = el('div','msg bot');
+  const b = el('div','bubble');
+  b.appendChild(el('div',null,data.text));
+
+  if(data.source && (data.source.npa || (data.source.urls||[]).length)){
+    const src = el('div','src');
+    if(data.source.npa) src.appendChild(el('div',null,'Источник: ' + data.source.npa));
+    (data.source.urls||[]).forEach(u=>{
+      const a = document.createElement('a');
+      a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.textContent = u;
+      const line = el('div'); line.appendChild(a); src.appendChild(line);
+    });
+    b.appendChild(src);
+  }
+
+  const meta = el('div','meta');
+  meta.appendChild(el('span','tag ' + data.kind, KIND_LABEL[data.kind] || data.kind));
+  meta.appendChild(el('span','tag','интент: ' + data.intent));
+  meta.appendChild(el('span','tag','уверенность: ' + data.confidence));
+  if(data.doc_id) meta.appendChild(el('span','tag','документ: ' + data.doc_id));
+  b.appendChild(meta);
+
+  if((data.buttons||[]).length){
+    const btns = el('div','btns');
+    data.buttons.forEach(btn=>{
+      const el2 = el('button',null,btn.label);
+      el2.onclick = ()=>send(btn.payload, btn.label);
+      btns.appendChild(el2);
+    });
+    b.appendChild(btns);
+  }
+
+  if(dbg.checked && (data.debug||[]).length){
+    const d = document.createElement('details');
+    d.appendChild(el('summary',null,'поиск: топ-5'));
+    d.appendChild(el('pre',null,data.debug.join('\n')));
+    b.appendChild(d);
+  }
+
+  row.appendChild(b);
+  chat.appendChild(row); chat.scrollTop = chat.scrollHeight;
+}
+
+async function send(text, displayAs){
+  addUser(displayAs || text);
+  try{
+    const res = await fetch('/api/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text, session})
+    });
+    addBot(await res.json());
+  }catch(e){
+    addBot({text:'Не удалось связаться с сервером: ' + e.message, kind:'no_data',
+            intent:'error', confidence:0, buttons:[], debug:[]});
+  }
+}
+
+form.onsubmit = e=>{
+  e.preventDefault();
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  send(text);
+};
+
+const exWrap = document.getElementById('examples');
+EXAMPLES.forEach(q=>{
+  const b = el('button',null,q);
+  b.onclick = ()=>send(q);
+  exWrap.appendChild(b);
+});
+
+send('/start');
+</script>
+</body>
+</html>
