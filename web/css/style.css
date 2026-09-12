@@ -8,6 +8,15 @@
     src: url(font/Chillax-Semibold.otf);
 }
 
+@font-face {
+    font-family: 'roboto';
+    src: url(font/Roboto-Italic-VariableFont_wdth\,wght.ttf);
+}
+
+@font-face {
+    font-family: 'roboto2';
+    src: url(font/Roboto-VariableFont_wdth\,wght.ttf);
+}
 
 
 *{
@@ -18,7 +27,7 @@
 
 body{
     background: black;
-    font-family: 'chil-m';
+    font-family: 'roboto';
     color: white;
     overflow-x: hidden;
 }
@@ -34,6 +43,9 @@ header{
     align-items: center;
     color: white;
     }
+    .wrapper{
+        margin-bottom: 150px;
+    }
 
 .logo{
     margin-left: 20px;
@@ -47,21 +59,21 @@ header{
 
 .text .zag1{ 
     margin-bottom: -20px;
-    font-size: 45px;
-    font-family: 'chil-b';
+    font-size: 55px;
+    font-family: 'roboto2';
     font-weight: 900;
 }
 
 .text .zag2{ 
     margin-bottom: 15px;
     font-size: 45px;
-    font-family: 'chil-b';
+    font-family: 'roboto2';
     font-weight: 900;
 }
 
 .text .zag2{
     margin-bottom: 10px;
-    background-image: linear-gradient(#FAED00,#0087CD,#A0E720);
+    background: #A0E720;
     color: transparent;
     background-clip: text;
      -webkit-background-clip: text;
@@ -75,21 +87,23 @@ header{
 .button {
     position: relative;
     text-align: center;
-    margin-top: 30px;
-   display: flex;
-   gap: 20px;
-   justify-content: center;
-   color: white;
+    margin-top: 20px;
+    font-family: 'roboto2';
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    color: rgb(255, 255, 255);
 }
 
 .button a{
     text-decoration: none;
+    padding-bottom: 1000px;
     color: white;
 }
 
 .button .method1{
-    width: 180px;
-    height: 30px;
+    width: 150px;
+    height: 20px;
     border: 1px;
     padding: 5px;
     border-radius: 400px;
@@ -114,15 +128,54 @@ header{
     background: black;
 }
 
-.banner{
+.bus{
     position: relative;
    text-align: center;
    z-index: 3;
+   margin-top: -520px;
+    animation: flight2 4s infinite;
 }
 
-.banner img{
-    width: 800px;
+.bus img{
+    width: 1000px;
     object-fit: cover;
+    text-align: center;
+}
+
+.robot{
+    position: relative;
+    text-align: center;
+    z-index: 4;
+    animation: flight 5s infinite;
+}
+
+@keyframes flight {
+  0% {
+    transform: translateX(0) translateY(0); /* Движение по прямой */
+  }
+  50% {
+    transform: translateX(-10px) translateY(10px); /* Движение по дуге с покачиванием */
+  }
+  100% {
+    transform: translateX(0) translateY(0); /* Возвращение в исходную точку */
+  }
+}
+
+@keyframes flight2 {
+  0% {
+    transform: translateX(0) translateY(0); /* Движение по прямой */
+  }
+  50% {
+    transform: translateX(10px) translateY(-10px); /* Движение по дуге с покачиванием */
+  }
+  100% {
+    transform: translateX(0) translateY(0); /* Возвращение в исходную точку */
+  }
+}
+.robot img{
+    width: 900px;
+    object-fit: cover;
+    text-align: center;
 }
 
 .r1{
@@ -168,7 +221,7 @@ header{
 }
 
 .r1, .r2, .r3{
-    animation: puls 10s infinite ease-in-out; /*переход начинается медленно, ускоряется и снова замедляется к концу.*/
+    animation: puls 7s infinite ease-in-out; /*переход начинается медленно, ускоряется и снова замедляется к концу.*/
 }
 
 @keyframes puls {

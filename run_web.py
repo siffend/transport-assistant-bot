@@ -13,7 +13,7 @@ import os
 from run_bot import load_dotenv
 
 
-def main() -> None:
+def chat() -> None:
     load_dotenv()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
     from assistant import config
@@ -27,4 +27,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    chat()

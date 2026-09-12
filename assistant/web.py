@@ -46,9 +46,10 @@ def create_app(assistant: Assistant | None = None) -> Flask:
     def index():
         return send_from_directory(WEB_DIR, "main.html")
 
-    @app.get("/why-us")
-    def why_us():
-        return send_from_directory(WEB_DIR, "why_us.html")
+    @app.get("/chat")
+    def chat():
+        return send_from_directory(WEB_DIR, "chat.html")
+
 
     @app.get("/css/<path:filename>")
     def css(filename):
